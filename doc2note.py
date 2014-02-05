@@ -1,53 +1,55 @@
 # coding: utf-8
-import win32com
-get_ipython().magic(u'pwd ')
-get_ipython().magic(u'cd ')
-get_ipython().magic(u'cd d:rdyjh/')
-get_ipython().magic(u'pwd ')
-get_ipython().system(u'dir /on ')
-get_ipython().magic(u'cd Documents/')
-get_ipython().system(u'dir /on ')
-from win32com.client import constants, Dispatch
+import glob
 import os
-get_ipython().magic(u'pinfo os.system')
-get_ipython().system(u'dir /on *.doc')
-word = Dispatch('Word.Application')
-wordfile = '左云县辖长城.doc'
-import os
-name, ext = os.path.splitext(wordfile)
-txtfile = name + '.txt'
-print txtfile
-print txtfile.decode('gb2312')
-print wordfile
-print wordfile.encode('gb2312')
-wordfile = u'左云县辖长城.doc'
-print wordfile
-name, ext = os.path.splitext(wordfile)
-txtfile = name + '.txt'
-print txtfile
-word.Documents.Open(os.path.abspath(wordfile))
-wdFormatTextLineBreaks = 3
-word.ActiveDocument.SaveAs(os.path.abspath(txtfile), FileFormat=wdFormatTextLineBreaks)
-word.ActiveDocuments.Close()
-word.ActiveDocument.Close()
-get_ipython().magic(u'pinfo open')
-get_ipython().magic(u'pwd ')
 import subprocess
-subprocess.call(['dir', '/?'])
-subprocess.call('dir')
-subprocess.call('ls')
-subprocess.call('pwd')
-subprocess.call('ipconfig')
-subprocess.call('C:\Program Files\Evernote\EnScript.exe')
-subprocess.call('C:\Program Files\Evernote\Evernote>ENScript.exe')
-subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe')
-subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile)
-subprocess.call(u'C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile)
-subprocess.call(u'C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile.decode('utf8'))
-txtfile
-subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile.encode('gb18080'))
-subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile.encode('gbk'))
-get_ipython().magic(u'pinfo edit')
-get_ipython().magic(u'edit In[:50]')
-get_ipython().magic(u'pinfo %save')
-get_ipython().magic(u'save doc2note.py 1-52')
+
+def doc2txt_plan(wordfile_path, txt_path):
+    head, tail = os.path.split(wordfile_path)
+    name, ext = os.path.splitext(tail)
+    txtfile = name + '.txt'
+
+    txtfile_path = os.path.join(txt_path, txtfile)
+    if os.path.exists(txtfile_path):
+        return None
+    return txtfile_path
+
+
+def win_doc2txt(wordfile_path, txtfile_path):
+    stub_doc2txt(wordfile_path, txtfile_path)
+    from win32com.client import constants, Dispatch
+    word = Dispatch('Word.Application')
+    word.Documents.Open(wordfile_path)
+    wdFormatTextLineBreaks = 3
+    word.ActiveDocument.SaveAs(txtfile_path, FileFormat=wdFormatTextLineBreaks)
+    word.ActiveDocument.Close()
+
+    return txtfile_path
+
+def win_txt2note(txtfile_path):
+    stub_txt2note(txtfile_path)
+    subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile_path)
+
+def stub_doc2txt(wordfile_path, txtfile_path):
+    print wordfile_path, '->', txtfile_path
+
+def stub_txt2note(txtfile_path):
+    print txtfile_path, '->', 'EverNote'
+
+doc2txt = stub_doc2txt
+txt2note = stub_txt2note
+
+if __name__ == '__main__':
+    document_path = '/Users/ant/hobbies/doc2note/'
+    txt_path = '/Users/ant/hobbies/doc2note/text/'
+    try:
+        os.mkdir(txt_path)
+    except OSError:
+        pass
+    for wordfile in glob.glob(os.path.join('*.doc')):
+        wordfile_path = os.path.abspath(wordfile)
+        txtfile_path = doc2txt_plan(wordfile_path, txt_path)
+        if txtfile_path:
+            doc2txt(wordfile_path, txtfile_path)
+            txt2note(txtfile_path)
+        else:
+            print 'Skip duplicated %s' % wordfile_path
