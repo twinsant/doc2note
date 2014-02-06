@@ -1,4 +1,5 @@
 # coding: utf-8
+# Dev under Mac OS X, run under Windows Vista.
 import glob
 import os
 import subprocess
@@ -27,7 +28,8 @@ def win_doc2txt(wordfile_path, txtfile_path):
 
 def win_txt2note(txtfile_path):
     stub_txt2note(txtfile_path)
-    subprocess.call('C:\Program Files\Evernote\Evernote\ENScript.exe createNote /s ' + txtfile_path)
+    cmd = u'C:/Program Files/Evernote/Evernote/ENScript.exe createNote /s "%s"' % txtfile_path.decode('gb18030')
+    subprocess.call(cmd.encode('gb18030'))
 
 def stub_doc2txt(wordfile_path, txtfile_path):
     print wordfile_path, '->', txtfile_path
@@ -35,21 +37,22 @@ def stub_doc2txt(wordfile_path, txtfile_path):
 def stub_txt2note(txtfile_path):
     print txtfile_path, '->', 'EverNote'
 
-doc2txt = stub_doc2txt
-txt2note = stub_txt2note
+doc2txt = win_doc2txt
+txt2note = win_txt2note
 
 if __name__ == '__main__':
-    document_path = '/Users/ant/hobbies/doc2note/'
-    txt_path = '/Users/ant/hobbies/doc2note/text/'
+    document_path = 'D:/User/Documents'
+    txt_path = 'D:/text'
     try:
         os.mkdir(txt_path)
     except OSError:
         pass
-    for wordfile in glob.glob(os.path.join('*.doc')):
+    for wordfile in glob.glob(os.path.join(document_path, '*.doc')):
         wordfile_path = os.path.abspath(wordfile)
         txtfile_path = doc2txt_plan(wordfile_path, txt_path)
         if txtfile_path:
             doc2txt(wordfile_path, txtfile_path)
             txt2note(txtfile_path)
+            #break
         else:
             print 'Skip duplicated %s' % wordfile_path
